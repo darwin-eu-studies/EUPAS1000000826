@@ -1,0 +1,681 @@
+---
+title: "Tables for report"
+output: word_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+```
+
+
+```{r}
+diagnosticProcedures <- c(
+"Brain MRI" = "Mri",
+"Brain PET-F18" = "Brain pet"
+)
+
+prespecifiedClinicalFeatures <- c(
+  "Neuropsychiatric symptoms" = "Neuropsychiatric symptoms",
+  "Alterations in activities of daily living" = "Alterations in activities of daily living",
+  "Caregiver support" = "Caregiver support",
+  "Daily activities limitation" = "Daily activities limitation",
+  "MCI before AD diagnosis" = "Mild cognitive impairment"
+)
+
+alzheimersDiseaseDrugs <- c(
+  "Memantine" = "Memantine",
+  "Donepezil" = "Donepezil",
+  "Rivastigmine"  = "Rivastigmine",
+  "Galantamine" = "Galantamin" # possible spelling error
+)
+
+medicationsForComorbidities <- c(
+  "Antiplatelets"  = "Antiplatelets stroke myocardial infarction atrial fibrillation heart failure" ,
+  "Anticoagulants/Antithrombotics" = "Anticoagulants antithromb stroke myocardial infarction atrial fibrillation heart failure",
+  "Oral glucose-lowering drugs" = "Oral glucose lowering drugs",
+  "Insulin" = "Insulin",
+  "Antihypertensives" = "Antihypertensives hypertension",
+  "Antiarrhythmics/rhythm control drugs" = "Rhythm control drugs stroke myocardial infarction atrial fibrillation heart failure",
+  "Lipid lowering drugs" = "Lipid lowering drugs hypercholesterolemia hypertriglyceridemia",
+  "Heart failure treatment" = "Heart failure treatment stroke myocardial infarction atrial fibirllation heart failure"
+)
+
+conditions <- c(
+  "Down's syndrome" = "Downs syndrome",
+  "Stroke" = "Stroke",
+  "Atrial fibrillation" = "Atrial fibrillation",
+  "Myocardial infarction" = "Myocardial infarction",
+  "Heart failure" = "Heart failure",
+  "Hypertension" = "Hypertension",
+  "Diabetes"  = "Diabetes",
+  "Hypercholesterolemia" = "Hypercholesterolemia",
+  "Hypertriglyceridemia" = "Hypertriglyceridemia"
+)
+
+other <- c(
+  "Alzheimer s disease" = "Alzheimer s disease",
+  "Diabetes drugs"  =  "Diabetes drugs",
+  "Acetylcholinesterase inhibitors" = "Acetylcholinesterase inhibitors",
+  "Antipsychotics" = "Antipsychotics",
+  "Metabolic syndrome", "Metabolic syndrome",
+  "Heart failure treatment" = "Heart failure treatment stroke myocardial infarction atrial fibirllation heart failure",
+  "Alzheimer disease" =   "Alzheimer disease"
+)
+
+
+allComorbidities <- c(
+  diagnosticProcedures,
+  prespecifiedClinicalFeatures,
+  alzheimersDiseaseDrugs,
+  medicationsForComorbidities,
+  conditions,
+  other
+)
+
+gt_style_darwin <- function(tbl) {
+  require(gt)
+  blue <- "#003399"
+  tbl |>   
+  # HEADER + SPANNERS: background + borders
+  tab_style(
+    style = list(
+      cell_fill(color = blue),
+      cell_text(color = "white", size = 18),
+      cell_borders(sides = "all", color = blue, weight = px(2))
+    ),
+    locations = list(
+      cells_title(groups = c("title", "subtitle")),
+      cells_column_spanners(everything()),
+      cells_column_labels(everything())
+    )
+  ) %>%
+  
+  # BODY borders AND MAKE BODY TEXT 9PT
+  tab_style(
+    style = list(
+      cell_borders(sides = "all", color = blue, weight = px(1)),
+      cell_text(size = 18)
+    ),
+    locations = cells_body()
+  ) %>%
+  
+  # STUB left border AND MAKE STUB TEXT 9PT
+  tab_style(
+    style = list(
+      cell_borders(sides = "left", color = blue, weight = px(1)),
+      cell_text(size = 18)
+    ),
+    locations = cells_stub()
+  ) %>%
+  
+  # Add a right border to the last column cells
+  tab_style(
+    style = cell_borders(sides = "right", color = blue, weight = px(1)),
+    locations = cells_body(columns = dplyr::last_col())
+  ) %>%
+  tab_style(
+    style = cell_borders(sides = "right", color = blue, weight = px(1)),
+    locations = cells_column_labels(columns = dplyr::last_col())
+  ) %>%
+  tab_style(
+  style = cell_fill(color = blue),
+  locations = cells_column_spanners()
+  ) |> 
+  
+  # TABLE-WIDE OUTER BORDERS (1 pt), now including left and right borders
+  tab_options(
+    table.border.top.color    = blue,
+    table.border.bottom.color = blue,
+    table.border.left.color   = blue,     # set left border color
+    table.border.right.color  = blue,     # set right border color
+    table.border.top.width    = px(1),
+    table.border.bottom.width = px(1),
+    table.border.left.width   = px(1),    # set left border width
+    table.border.right.width  = px(1),    # set right border width
+
+    # Ensure all cell and header borders are blue, and header background is blue
+    table_body.border.top.color        = blue,
+    table_body.border.bottom.color     = blue,
+    table_body.hlines.color            = blue,
+    table_body.vlines.color            = blue,
+    column_labels.border.top.color     = blue,
+    column_labels.border.bottom.color  = blue,
+    column_labels.vlines.color         = blue,
+    column_labels.background.color     = blue,
+    heading.border.bottom.color        = blue,
+    stub.border.color                  = blue
+  )
+}
+```
+
+```{r, echo=FALSE}
+if (!exists("data")) {
+  data <- readr::read_rds("data.rds")
+  purrr::walk(names(data), ~assign(., data[[.]], envir = .GlobalEnv))
+}
+
+library(dplyr)
+```
+
+```{=openxml}
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:eastAsia="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+    </w:rPr>
+    <w:t>Table 1. Distribution of baseline characteristics among participants (number and %, median and IQR, mean and SD) per cohorts of interest by data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+
+```{r, echo=FALSE}
+demographics |> 
+    mutate(group_level = case_when(
+      stringr::str_detect(group_level, "denominator") ~ "General adult population",
+      stringr::str_detect(group_level, "alzheimer") ~ "Alzheimer's disease patients",
+      T ~ "Error!"
+    )) |>
+    filter(!variable_name %in% c(
+      "Number records",
+      "Cohort start date",
+      "Days in cohort",
+      "Prior observation",
+      "Future observation",
+      "Cohort end date"
+    )) |>
+   mutate(cdm_name = factor(cdm_name, levels = c("NAJS", "DK-DHR", "INGEF RDB", "IQVIA DA Germany", "IPCI", "CPRD GOLD"))) |> 
+   arrange(cdm_name) |> 
+    visOmopResults::visOmopTable(
+      estimateName = c(
+        "N(%)" = "<count> (<percentage>%)",
+        "N" = "<count>",
+        "mean (sd)" = "<mean> (<sd>)"
+      ),
+      header = "cdm_name"
+    ) |> 
+   tab_spanner(
+      label  = md("&nbsp;"),           # blank text
+      columns = c(`Cohort name`,
+                  `Variable name`,
+                  `Variable level`,
+                  `Estimate name`),
+      id = "blank_left"
+    ) |> 
+  gt_style_darwin()
+  
+  
+```
+
+
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:eastAsia="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+    </w:rPr>
+    <w:t>Table 2a. Distribution of clinical profile characteristics within 365 days prior to diagnosis among individuals with Alzheimer’s disease (number and %), by data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+				
+```{r, echo=FALSE, message=FALSE}
+comorbiditiesTable <- function(tabName = NULL) {
+  comorbidities |>
+        filter(variable_name == "Concepts flag -365 to 0") |>
+        mutate(variable_level = factor(
+          variable_level,
+          levels = allComorbidities,
+          labels = names(allComorbidities)
+        )) |>
+        arrange(
+          result_id,
+          cdm_name,
+          group_name,
+          group_level,
+          strata_name, strata_level, variable_name, variable_level
+        ) |>
+        mutate(variable_name = case_when(
+          variable_level %in% names(diagnosticProcedures) ~ stringr::str_replace(variable_name, "Concepts flag", "Diagnostic Procedures"),
+          variable_level %in% names(prespecifiedClinicalFeatures) ~ stringr::str_replace(variable_name, "Concepts flag", "Prespecified Clinical Features"),
+          variable_level %in% names(alzheimersDiseaseDrugs) ~ stringr::str_replace(variable_name, "Concepts flag", "Alzheimers Disease Drugs"),
+          variable_level %in% names(medicationsForComorbidities) ~ stringr::str_replace(variable_name, "Concepts flag", "Medications for Comorbidities"),
+          variable_level %in% names(conditions) ~ stringr::str_replace(variable_name, "Concepts flag", "Conditions"),
+          TRUE ~ variable_name
+        )) %>%
+        {
+          if (tabName == "diagnostic_procedures") {
+            filter(., stringr::str_detect(variable_name, "Diagnostic Procedures"))
+          } else if (tabName == "comorbidities") {
+            filter(., stringr::str_detect(variable_name, "Conditions"))
+          } else if (tabName == "clinical_profile")  {
+            filter(., stringr::str_detect(variable_name, "Diagnostic Procedures|Prespecified Clinical Features|Alzheimers Disease Drugs|Medications for Comorbidities"))
+          }
+        } %>%
+        mutate(variable_name = stringr::str_remove_all(variable_name, " -inf to 0| -365 to 0")) |> 
+        filter(!is.na(variable_level)) |>
+     mutate(cdm_name = factor(cdm_name, levels = c("NAJS", "DK-DHR", "INGEF RDB", "IQVIA DA Germany", "IPCI", "CPRD GOLD"))) |> 
+        arrange(cdm_name) |> 
+        visOmopResults::visOmopTable(
+          estimateName = c("N (%)" = "<count> (<percentage>)"),
+          header = "cdm_name",
+          hide = c("cohort_name")
+        ) |> 
+    tab_style(
+    style = list(
+      cell_fill(color = "#003399"),
+      cell_text(color = "white")   # optional: makes text readable
+    ),
+    locations = list(
+      cells_column_labels(everything()),
+      cells_title(groups = c("title", "subtitle"))
+    )
+  ) |> 
+     tab_spanner(
+      label  = md("&nbsp;"),           # blank text
+      columns = c(`Variable name`,
+                  `Variable level`,
+                  `Estimate name`),
+      id = "blank_left"
+    ) |> 
+  gt_style_darwin()
+}
+
+comorbiditiesTable("clinical_profile")
+```
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table 3. Distribution of comorbidities at any time prior and up to diagnosis among individuals with Alzheimer‘s disease (number and %), by data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+```{r}
+comorbiditiesTable("comorbidities")
+```
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table 4a. Distribution of prior cognitive diagnosis at any time prior and up to diagnosis among individuals with Alzheimer’s disease (number and %), by data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+```{r}
+mciTable <- function(strata) {
+  if (strata == "overall") {
+    hide <- c("age_group", "sex")
+    columns <- c(`Estimate name`)
+  } else if (strata == "age_group") {
+    hide <- "sex"
+    columns <- c(`Age group`, `Estimate name`)
+  } else if (strata == "sex") {
+    hide <- "age_group"
+    columns <- c(`Sex`, `Estimate name`)
+  }
+  comorbidities |> 
+      filter(stringr::str_detect(variable_level, "Mild cognitive impairment")) |> 
+      filter(stringr::str_detect(variable_name, "Concepts flag -inf to 0")) |> 
+      omopgenerics::bind(timeFromMci) |> 
+      mutate(estimate_value = stringr::str_remove_all(estimate_value, "-")) |> 
+      filter(!variable_name %in% c("Number records", "Number subjects")) |> 
+      filter(strata_name %in% strata) |> 
+     mutate(cdm_name = factor(cdm_name, levels = c("NAJS", "DK-DHR", "INGEF RDB", "IQVIA DA Germany", "IPCI", "CPRD GOLD"))) |> 
+        arrange(cdm_name) |> 
+      visOmopResults::visOmopTable(
+        estimateName = c(
+          "MCI, N (%)" = "<count> (<percentage>)",
+          "Duration in days from MCI occurrence to AD diagnosis (min-max)" = "<max> - <min>",
+          "Duration in days from MCI occurrence to AD diagnosis (median, p25-p75)" = "<median>, <q75> - <q25>",
+          "Duration in days from MCI occurrence to AD diagnosis (mean, SD)" = "<mean>, <sd>"),
+        header = "cdm_name",
+        hide = c("cohort_name", "variable_name", "variable_level", hide)
+      ) |> 
+     tab_spanner(
+      label  = md("&nbsp;"),           # blank text
+      columns = columns,
+      id = "blank_left"
+    ) |> 
+  gt_style_darwin()
+}
+mciTable(strata = "overall")
+```
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table 4b. Distribution of prior cognitive diagnosis at any time prior and up to diagnosis among individuals with Alzheimer’s disease (number and %), by data source, and age group</w:t>
+  </w:r>
+</w:p>
+```
+
+```{r}
+mciTable("age_group")
+```
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table 4c. Distribution of prior cognitive diagnosis at any time prior and up to diagnosis among individuals with Alzheimer’s disease (number and %), by data source, and sex</w:t>
+  </w:r>
+</w:p>
+```
+
+```{r}
+mciTable("sex")
+```
+
+# Appendix results
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table S1. Study attrition of individuals included in each cohort during the study period within each data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+```{r}
+      attrition %>%
+        mutate(variable_name = stringr::str_replace_all(variable_name, "_", " ") %>%
+                 stringr::str_to_title()) |> 
+   mutate(cdm_name = factor(cdm_name, levels = c("NAJS", "DK-DHR", "INGEF RDB", "IQVIA DA Germany", "IPCI", "CPRD GOLD"))) |> 
+        arrange(cdm_name) |> 
+      CohortCharacteristics::tableCohortAttrition(
+        type = "gt",
+        header = "variable_name",
+        groupColumn = c("cdm_name", "cohort_name"),
+        hide = c("variable_level", "reason_id", "estimate_name", "table_name", "cohort_definition_id"),
+        .options = list()
+      ) |> 
+   tab_spanner(
+      label  = md("&nbsp;"),           # blank text
+      columns = c(`Reason`),
+      id = "blank_left"
+    ) |> 
+  gt_style_darwin()
+```
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table S2. Incidence rates per 100,000 PYs (95% confidence intervals) of AD in the general adult population in &lt;data source name&gt; stratified by calendar year and data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+```{r}
+incidence %>%
+  visOmopResults::filterSettings(
+    denominator_age_group %in% "18 to 150",
+    denominator_sex %in% "Both"
+  ) %>%
+  visOmopResults::filterAdditional(analysis_interval %in% "years") |> 
+  mutate(additional_level = stringr::str_remove_all(additional_level, "-01-01")) |> 
+  mutate(cdm_name = factor(cdm_name, levels = c("NAJS", "DK-DHR", "INGEF RDB", "IQVIA DA Germany", "IPCI", "CPRD GOLD"))) |> 
+  arrange(cdm_name) |> 
+  IncidencePrevalence::tableIncidence(
+    type = "gt",
+    header = c("estimate_name"),
+    groupColumn = c("cdm_name", "outcome_cohort_name"),
+    settingsColumn = c("denominator_age_group", "denominator_sex"),
+    hide = c("denominator_cohort_name", "incidence_end_date", "denominator_age_group", "denominator_sex", "analysis_interval")
+  ) |> 
+   tab_spanner(
+      label  = md("&nbsp;"),           # blank text
+      columns = c(`Incidence start date`),
+      id = "blank_left"
+    ) |> 
+  gt_style_darwin()
+  # gt::cols_label(c("Incidence start date") ~ "")
+
+```
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table S2. Incidence rates per 100,000 PYs (95% confidence intervals) of AD in the general adult population stratified by sex and data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+```{r}
+
+incidence %>%
+  visOmopResults::filterSettings(
+    denominator_age_group %in% "18 to 150",
+    denominator_sex != "Both"
+  ) %>%
+  visOmopResults::filterAdditional(analysis_interval %in% "overall") |> 
+  mutate(additional_level = stringr::str_remove_all(additional_level, "-01-01")) |> 
+  mutate(cdm_name = factor(cdm_name, levels = c("NAJS", "DK-DHR", "INGEF RDB", "IQVIA DA Germany", "IPCI", "CPRD GOLD"))) |> 
+  arrange(cdm_name) |> 
+  IncidencePrevalence::tableIncidence(
+    type = "gt",
+    header = c("estimate_name"),
+    groupColumn = c("cdm_name", "outcome_cohort_name"),
+    settingsColumn = c("denominator_age_group", "denominator_sex"),
+    hide = c("denominator_cohort_name", "incidence_end_date", "incidence_start_date", "denominator_age_group", "analysis_interval")
+  ) |> 
+   tab_spanner(
+      label  = md("&nbsp;"),           # blank text
+      columns = c(`Denominator sex`),
+      id = "blank_left"
+    ) |> 
+  gt_style_darwin()
+
+```
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table S2. Incidence rates per 100,000 PYs (95% confidence intervals) of AD in the general adult population stratified by calendar sex and data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+```{r}
+incidence %>%
+  visOmopResults::filterSettings(
+    denominator_age_group %in% c("18 to 55", "56 to 65", "66 to 75", "76 to 85", "86 to 150"),
+    denominator_sex == "Both"
+  ) %>%
+  visOmopResults::filterAdditional(analysis_interval %in% "overall") |> 
+  mutate(additional_level = stringr::str_remove_all(additional_level, "-01-01")) |> 
+  mutate(cdm_name = factor(cdm_name, levels = c("NAJS", "DK-DHR", "INGEF RDB", "IQVIA DA Germany", "IPCI", "CPRD GOLD"))) |> 
+  arrange(cdm_name) |> 
+  IncidencePrevalence::tableIncidence(
+    type = "gt",
+    header = c("estimate_name"),
+    groupColumn = c("cdm_name", "outcome_cohort_name"),
+    settingsColumn = c("denominator_age_group", "denominator_sex"),
+    hide = c("denominator_cohort_name", "incidence_end_date", "incidence_start_date", "denominator_sex", "analysis_interval")
+  ) |> 
+   tab_spanner(
+      label  = md("&nbsp;"),           # blank text
+      columns = c(`Denominator age group`),
+      id = "blank_left"
+    ) |> 
+  gt_style_darwin()
+```
+
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table S3. Prevalence (95% confidence intervals) of AD in the general adult population stratified by calendar year and data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+
+```{r}
+prevalence %>%
+  visOmopResults::filterSettings(
+    denominator_age_group %in% "18 to 150",
+    denominator_sex %in% "Both"
+  ) %>%
+  visOmopResults::filterAdditional(analysis_interval %in% "years") |> 
+  mutate(additional_level = stringr::str_remove_all(additional_level, "-01-01")) |> 
+  mutate(cdm_name = factor(cdm_name, levels = c("NAJS", "DK-DHR", "INGEF RDB", "IQVIA DA Germany", "IPCI", "CPRD GOLD"))) |> 
+  arrange(cdm_name) |> 
+  IncidencePrevalence::tablePrevalence(
+    type = "gt",
+    header = c("estimate_name"),
+    groupColumn = c("cdm_name", "outcome_cohort_name"),
+    settingsColumn = c("denominator_age_group", "denominator_sex"),
+    hide = c("denominator_cohort_name", "prevalence_end_date", "denominator_age_group", "denominator_sex", "analysis_interval")
+  ) |> 
+   tab_spanner(
+      label  = md("&nbsp;"),           # blank text
+      columns = c(`Prevalence start date`),
+      id = "blank_left"
+    ) |> 
+  gt::cols_label(c("Prevalence start date") ~ "") |> 
+  gt_style_darwin()
+
+```
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table S3. Prevalence (95% confidence intervals) of AD in the general adult population stratified by sex and data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+```{r}
+
+prevalence %>%
+  visOmopResults::filterSettings(
+    denominator_age_group %in% "18 to 150",
+    denominator_sex != "Both"
+  ) %>%
+  visOmopResults::filterAdditional(analysis_interval %in% "overall") |> 
+  mutate(additional_level = stringr::str_remove_all(additional_level, "-01-01")) |> 
+  mutate(cdm_name = factor(cdm_name, levels = c("NAJS", "DK-DHR", "INGEF RDB", "IQVIA DA Germany", "IPCI", "CPRD GOLD"))) |> 
+  arrange(cdm_name) |> 
+  IncidencePrevalence::tablePrevalence(
+    type = "gt",
+    header = c("estimate_name"),
+    groupColumn = c("cdm_name", "outcome_cohort_name"),
+    settingsColumn = c("denominator_age_group", "denominator_sex"),
+    hide = c("denominator_cohort_name", "prevalence_end_date", "prevalence_start_date", "denominator_age_group", "analysis_interval")
+  ) |> 
+   tab_spanner(
+      label  = md("&nbsp;"),           # blank text
+      columns = c(`Denominator sex`),
+      id = "blank_left"
+    ) |>
+  gt_style_darwin()
+
+```
+
+```{=openxml}
+<w:p><w:r><w:br w:type="page"/></w:r></w:p>
+<w:p>
+  <w:r>
+    <w:rPr>
+      <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/>
+      <w:sz w:val="22"/>
+      <w:szCs w:val="22"/>
+    </w:rPr>
+    <w:t>Table S3. Prevalence (95% confidence intervals) of AD in the general adult population stratified by age categories and data source.</w:t>
+  </w:r>
+</w:p>
+```
+
+```{r}
+prevalence %>%
+  visOmopResults::filterSettings(
+    denominator_age_group %in% c("18 to 55", "56 to 65", "66 to 75", "76 to 85", "86 to 150"),
+    denominator_sex == "Both"
+  ) %>%
+  visOmopResults::filterAdditional(analysis_interval %in% "overall") |> 
+  mutate(additional_level = stringr::str_remove_all(additional_level, "-01-01")) |> 
+  mutate(cdm_name = factor(cdm_name, levels = c("NAJS", "DK-DHR", "INGEF RDB", "IQVIA DA Germany", "IPCI", "CPRD GOLD"))) |> 
+  arrange(cdm_name) |> 
+  IncidencePrevalence::tablePrevalence(
+    type = "gt",
+    header = c("estimate_name"),
+    groupColumn = c("cdm_name", "outcome_cohort_name"),
+    settingsColumn = c("denominator_age_group", "denominator_sex"),
+    hide = c("denominator_cohort_name", "prevalence_end_date", "prevalence_start_date", "denominator_sex", "analysis_interval")
+  ) |> 
+   tab_spanner(
+      label  = md("&nbsp;"),           # blank text
+      columns = c(`Denominator age group`),
+      id = "blank_left"
+    ) |>
+  gt_style_darwin()
+```
+
