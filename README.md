@@ -1,6 +1,6 @@
 ![](man/figures/darwin-eu_logo.png)
 
-[P4-C1-021 DARWIN EU® - Alzheimer’s Disease: Incidence, Prevalence, and Patients’ Characteristics]
+P4-C1-021 DARWIN EU® - Alzheimer’s Disease: Incidence, Prevalence, and Patients’ Characteristics
 =============
 
 **DARWIN EU ID:** P4-C1-021
