@@ -1,0 +1,32 @@
+Package: P4C1021
+Type: Package
+Title: Characterization of Alzheimer's disease in Europe
+Version: 1.3.1
+Author: DARWIN EU Coordination Centre <enquiries@darwin-eu.org>
+Maintainer: DARWIN EU Coordination Centre <enquiries@darwin-eu.org>
+Description:
+    Incidence and Period prevalence of Alzheimers disease in Europe.
+    Characterization of comorbidities of Alzheimer's patients.
+License: Apache License 2.0
+Encoding: UTF-8
+Depends:
+    R (>= 4.1.0)
+Imports:
+    CDMConnector,
+    cli,
+    CodelistGenerator,
+    CohortCharacteristics,
+    CohortConstructor,
+    dplyr,
+    IncidencePrevalence,
+    log4r,
+    omopgenerics,
+    PatientProfiles,
+    readr,
+    shiny
+Suggests:
+    DBI,
+    duckdb,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+RoxygenNote: 7.3.3
